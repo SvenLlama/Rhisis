@@ -1,59 +1,79 @@
-﻿using Ether.Network.Packets;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Rhisis.Core.Common;
-using Rhisis.Core.Cryptography;
-using Rhisis.Core.DependencyInjection;
-using Rhisis.Core.Services;
 using Rhisis.Core.Structures.Configuration;
 using Rhisis.Database;
+using Rhisis.Database.Entities;
+using Rhisis.Login.Client;
+using Rhisis.Login.Core;
 using Rhisis.Login.Packets;
-using Rhisis.Network;
 using Rhisis.Network.Packets;
 using Rhisis.Network.Packets.Login;
+using Sylver.HandlerInvoker.Attributes;
 using System;
+using System.Linq;
 
 namespace Rhisis.Login
 {
+    [Handler]
     public class LoginHandler
     {
-        private static readonly ILogger<LoginHandler> Logger = DependencyContainer.Instance.Resolve<ILogger<LoginHandler>>();
+        private readonly ILogger<LoginHandler> _logger;
+        private readonly LoginConfiguration _loginConfiguration;
+        private readonly ILoginServer _loginServer;
+        private readonly IRhisisDatabase _database;
+        private readonly ICoreServer _coreServer;
+        private readonly ILoginPacketFactory _loginPacketFactory;
 
-        [PacketHandler(PacketType.PING)]
-        public static void OnPing(LoginClient client, INetPacketStream packet)
+        /// <summary>
+        /// Creates a new <see cref="LoginHandler"/> instance.
+        /// </summary>
+        /// <param name="logger">Logger.</param>
+        /// <param name="loginConfiguration">Login server configuration.</param>
+        /// <param name="loginServer">Login server instance.</param>
+        /// <param name="database">Database service.</param>
+        /// <param name="coreServer">Core server.</param>
+        /// <param name="loginPacketFactory">Login server packet factory.</param>
+        public LoginHandler(ILogger<LoginHandler> logger, IOptions<LoginConfiguration> loginConfiguration, ILoginServer loginServer, IRhisisDatabase database, ICoreServer coreServer, ILoginPacketFactory loginPacketFactory)
         {
-            var pak = new PingPacket(packet);
-
-            if (!pak.IsTimeOut)
-                CommonPacketFactory.SendPong(client, pak.Time);
+            _logger = logger;
+            _loginConfiguration = loginConfiguration.Value;
+            _loginServer = loginServer;
+            _database = database;
+            _coreServer = coreServer;
+            _loginPacketFactory = loginPacketFactory;
         }
 
-        [PacketHandler(PacketType.CERTIFY)]
-        public static void OnLogin(LoginClient client, INetPacketStream packet)
+        /// <summary>
+        /// Handles the PING packet.
+        /// </summary>
+        /// <param name="client">Client.</param>
+        /// <param name="pingPacket">Ping packet.</param>
+        [HandlerAction(PacketType.PING)]
+        public void OnPing(ILoginClient client, PingPacket pingPacket)
         {
-            var loginServer = DependencyContainer.Instance.Resolve<ILoginServer>();
-            var configuration = DependencyContainer.Instance.Resolve<LoginConfiguration>();
-            var certifyPacket = new CertifyPacket(packet, configuration.PasswordEncryption);
-            string password = null;
-
-            if (certifyPacket.BuildVersion != configuration.BuildVersion)
+            if (!pingPacket.IsTimeOut)
             {
-                AuthenticationFailed(client, ErrorType.CERT_GENERAL, "bad client build version");
+                _loginPacketFactory.SendPong(client, pingPacket.Time);
+            }
+        }
+
+        /// <summary>
+        /// Certifies and authenticates a user.
+        /// </summary>
+        /// <param name="client">Client.</param>
+        /// <param name="certifyPacket">Certify packet.</param>
+        [HandlerAction(PacketType.CERTIFY)]
+        public void OnCertify(ILoginClient client, CertifyPacket certifyPacket)
+        {
+            if (certifyPacket.BuildVersion != _loginConfiguration.BuildVersion)
+            {
+                AuthenticationFailed(client, ErrorType.ILLEGAL_VER, "bad client build version");
                 return;
             }
 
-            if (configuration.PasswordEncryption)
-            {
-                byte[] encryptionKey = Aes.BuildEncryptionKeyFromString(configuration.EncryptionKey, 16);
-
-                password = Aes.DecryptByteArray(certifyPacket.EncryptedPassword, encryptionKey);
-            }
-            else
-            {
-                password = packet.Read<string>();
-            }
-
-            var authenticationService = DependencyContainer.Instance.Resolve<IAuthenticationService>();
-            var authenticationResult = authenticationService.Authenticate(certifyPacket.Username, password);
+            DbUser user = _database.Users.FirstOrDefault(x => x.Username.Equals(certifyPacket.Username));
+            AuthenticationResult authenticationResult = Authenticate(user, certifyPacket.Password);
 
             switch (authenticationResult)
             {
@@ -73,58 +93,84 @@ namespace Rhisis.Login
                     AuthenticationFailed(client, ErrorType.ILLEGAL_ACCESS, "logged in with deleted account");
                     break;
                 case AuthenticationResult.Success:
-                    if (loginServer.IsClientConnected(certifyPacket.Username))
+                    if (_loginServer.IsClientConnected(certifyPacket.Username))
                     {
                         AuthenticationFailed(client, ErrorType.DUPLICATE_ACCOUNT, "client already connected", disconnectClient: false);
                         return;
                     }
 
-                    var database = DependencyContainer.Instance.Resolve<IDatabase>();
-                    var user = database.Users.Get(x => x.Username.Equals(certifyPacket.Username, StringComparison.OrdinalIgnoreCase));
-
-                    if (user == null)
-                    {
-                        AuthenticationFailed(client, ErrorType.ILLEGAL_ACCESS, "Cannot find user in database");
-                        Logger.LogCritical($"Cannot find user '{certifyPacket.Username}' in database to update last connection time.");
-                        return;
-                    }
-
                     user.LastConnectionTime = DateTime.UtcNow;
-                    database.Users.Update(user);
-                    database.Complete();
+                    _database.Users.Update(user);
+                    _database.SaveChanges();
 
-                    LoginPacketFactory.SendServerList(client, certifyPacket.Username, loginServer.GetConnectedClusters());
+                    _loginPacketFactory.SendServerList(client, certifyPacket.Username, _coreServer.GetConnectedClusters());
                     client.SetClientUsername(certifyPacket.Username);
-                    Logger.LogInformation($"User '{client.Username}' logged succesfully from {client.RemoteEndPoint}.");
+                    _logger.LogInformation($"User '{client.Username}' logged succesfully from {client.Socket.RemoteEndPoint}.");
                     break;
                 default:
                     break;
             }
         }
 
-        [PacketHandler(PacketType.CLOSE_EXISTING_CONNECTION)]
-        public static void OnCloseExistingConnection(LoginClient client, INetPacketStream packet)
+        /// <summary>
+        /// Closes an existing connection.
+        /// </summary>
+        /// <param name="client">Client.</param>
+        /// <param name="closeConnectionPacket">Close connection packet.</param>
+        [HandlerAction(PacketType.CLOSE_EXISTING_CONNECTION)]
+        public void OnCloseExistingConnection(ILoginClient client, CloseConnectionPacket closeConnectionPacket)
         {
-            var loginServer = DependencyContainer.Instance.Resolve<ILoginServer>();
-            var closeConnectionPacket = new CloseConnectionPacket(packet);
-            var otherConnectedClient = loginServer.GetClientByUsername(closeConnectionPacket.Username);
+            var otherConnectedClient = _loginServer.GetClientByUsername(closeConnectionPacket.Username);
 
             if (otherConnectedClient == null)
             {
-                Logger.LogWarning($"Cannot find user with username '{closeConnectionPacket.Username}'.");
+                _logger.LogWarning($"Cannot find user with username '{closeConnectionPacket.Username}'.");
                 return;
             }
 
             // TODO: disconnect client from server and ISC.
         }
 
-        private static void AuthenticationFailed(LoginClient client, ErrorType error, string reason, bool disconnectClient = true)
+        /// <summary>
+        /// Sends an authentication failed packet to the client.
+        /// </summary>
+        /// <param name="client">Client.</param>
+        /// <param name="error">Authentication error type.</param>
+        /// <param name="reason">Authentication error reason.</param>
+        /// <param name="disconnectClient">A boolean value that indicates if we disconnect the client or not.</param>
+        private void AuthenticationFailed(ILoginClient client, ErrorType error, string reason, bool disconnectClient = true)
         {
-            Logger.LogWarning($"Unable to authenticate user from {client.RemoteEndPoint}. Reason: {reason}");
-            LoginPacketFactory.SendLoginError(client, error);
+            _logger.LogWarning($"Unable to authenticate user from {client.Socket.RemoteEndPoint}. Reason: {reason}");
+            _loginPacketFactory.SendLoginError(client, error);
 
             if (disconnectClient)
                 client.Disconnect();
+        }
+
+        /// <summary>
+        /// Authenticates a user.
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <param name="password">Password</param>
+        /// <returns>Authentication result</returns>
+        private AuthenticationResult Authenticate(DbUser user, string password)
+        {
+            if (user == null)
+            {
+                return AuthenticationResult.BadUsername;
+            }
+
+            if (user.IsDeleted)
+            {
+                return AuthenticationResult.AccountDeleted;
+            }
+
+            if (!user.Password.Equals(password, StringComparison.OrdinalIgnoreCase))
+            {
+                return AuthenticationResult.BadPassword;
+            }
+
+            return AuthenticationResult.Success;
         }
     }
 }

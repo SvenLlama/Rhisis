@@ -1,9 +1,8 @@
 ﻿using Rhisis.Core.Structures;
-using Rhisis.World.Game.Core.Systems;
 
 namespace Rhisis.World.Systems.Teleport
 {
-    public class TeleportEventArgs : SystemEventArgs
+    public class TeleportEventArgs
     {
         /// <summary>
         /// Gets the target map id.
@@ -73,17 +72,11 @@ namespace Rhisis.World.Systems.Teleport
         /// <param name="angle">Target angle.</param>
         public TeleportEventArgs(int mapId, float positionX, float positionZ, float? positionY, float angle)
         {
-            this.MapId = mapId;
-            this.PositionX = positionX;
-            this.PositionZ = positionZ;
-            this.PositionY = positionY;
-            this.Angle = angle;
-        }
-
-        /// <inheritdoc />
-        public override bool GetCheckArguments()
-        {
-            return this.MapId > 0 && this.PositionX > 0f && this.PositionZ > 0f;
+            MapId = mapId;
+            PositionX = positionX;
+            PositionZ = positionZ;
+            PositionY = positionY;
+            Angle = angle;
         }
     }
 }
