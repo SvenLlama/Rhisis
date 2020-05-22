@@ -83,20 +83,18 @@ namespace Rhisis.World.Handlers
 
             client.Player.Follow.Reset();
             client.Player.Battle.Reset();
+            client.Player.Moves.DestinationPosition.Reset();
             client.Player.Object.Position = packet.BeginPosition + packet.DestinationPosition;
             client.Player.Object.Angle = packet.Angle;
             client.Player.Object.MovingFlags = (ObjectState)packet.State;
             client.Player.Object.MotionFlags = (StateFlags)packet.StateFlag;
-            client.Player.Moves.IsMovingWithKeyboard = client.Player.Object.MovingFlags.HasFlag(ObjectState.OBJSTA_FMOVE) || 
-                client.Player.Object.MovingFlags.HasFlag(ObjectState.OBJSTA_BMOVE);
-            client.Player.Moves.DestinationPosition = packet.BeginPosition + packet.DestinationPosition;
 
             _moverPacketFactory.SendMoverMoved(client.Player,
                 packet.BeginPosition,
                 packet.DestinationPosition,
                 client.Player.Object.Angle, 
-                (uint)client.Player.Object.MovingFlags, 
-                (uint)client.Player.Object.MotionFlags,
+                (int)client.Player.Object.MovingFlags, 
+                (int)client.Player.Object.MotionFlags,
                 packet.Motion,
                 packet.MotionEx,
                 packet.Loop,
@@ -115,13 +113,11 @@ namespace Rhisis.World.Handlers
 
             // TODO: check if player is flying
 
+            client.Player.Moves.DestinationPosition.Reset();
             client.Player.Object.Position = packet.BeginPosition + packet.DestinationPosition;
             client.Player.Object.Angle = packet.Angle;
             client.Player.Object.MovingFlags = (ObjectState)packet.State;
             client.Player.Object.MotionFlags = (StateFlags)packet.StateFlag;
-            client.Player.Moves.IsMovingWithKeyboard = client.Player.Object.MovingFlags.HasFlag(ObjectState.OBJSTA_FMOVE) ||
-                client.Player.Object.MovingFlags.HasFlag(ObjectState.OBJSTA_BMOVE);
-            client.Player.Moves.DestinationPosition = packet.BeginPosition + packet.DestinationPosition;
 
             _moverPacketFactory.SendMoverBehavior(client.Player,
                 packet.BeginPosition,
