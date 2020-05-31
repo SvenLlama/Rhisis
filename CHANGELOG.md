@@ -4,9 +4,19 @@ This is the changelog of the Rhisis project. All notable changes to this project
 
 ## [Unreleased]
 
-## [0.5.0](https://github.com/Eastrall/Rhisis/releases/tag/v0.5) - 2020-05-30
+## [0.5.0](https://github.com/Eastrall/Rhisis/releases/tag/v0.5) - 2020-06-??
 
 ## [Released]
+
+## [0.4.4](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.2) - 2020-05-31
+
+### Fixes
+
+- ![world] Fix inventory system and item container issues ([#427](https://github.com/Eastrall/Rhisis/pull/427))
+
+### Optimizations
+
+- ![cluster] Optimization of the characters list request for each connected clients ([#427](https://github.com/Eastrall/Rhisis/pull/427))
 
 ## [0.4.3](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.2) - 2020-05-23
 
