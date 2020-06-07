@@ -8,7 +8,15 @@ This is the changelog of the Rhisis project. All notable changes to this project
 
 ## [Released]
 
-## [0.4.4](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.2) - 2020-05-31
+## [0.4.5](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.5) - 2020-06-07
+
+### Fixes
+
+- ![world] Rework shortcut/Taskbar system ([#431](https://github.com/Eastrall/Rhisis/pull/431))
+- ![world] Remove item from inventory ([#432](https://github.com/Eastrall/Rhisis/pull/432))
+- ![world] Resurect player if dead while connecting to the game ([#435](https://github.com/Eastrall/Rhisis/pull/435))
+
+## [0.4.4](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.4) - 2020-05-31
 
 ### Fixes
 
@@ -18,7 +26,7 @@ This is the changelog of the Rhisis project. All notable changes to this project
 
 - ![cluster] Optimization of the characters list request for each connected clients ([#427](https://github.com/Eastrall/Rhisis/pull/427))
 
-## [0.4.3](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.2) - 2020-05-23
+## [0.4.3](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.3) - 2020-05-23
 
 ### Fixes
 
