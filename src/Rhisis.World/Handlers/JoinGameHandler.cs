@@ -5,11 +5,13 @@ using Rhisis.Database.Entities;
 using Rhisis.Network.Packets;
 using Rhisis.Network.Packets.World;
 using Rhisis.World.Client;
+using Rhisis.World.Game.Entities;
 using Rhisis.World.Game.Factories;
 using Rhisis.World.Game.Maps;
 using Rhisis.World.Game.Maps.Regions;
 using Rhisis.World.Packets;
 using Rhisis.World.Systems.Death;
+using Rhisis.World.Systems.PlayerData;
 using Rhisis.World.Systems.Teleport;
 using Sylver.HandlerInvoker.Attributes;
 using System;
@@ -25,6 +27,7 @@ namespace Rhisis.World.Handlers
         private readonly IMapManager _mapManager;
         private readonly IDeathSystem _deathSystem;
         private readonly ITeleportSystem _teleportSystem;
+        private readonly IPlayerDataSystem _playerDataSystem;
         private readonly IPlayerFactory _playerFactory;
         private readonly IWorldSpawnPacketFactory _worldSpawnPacketFactory;
 
@@ -35,13 +38,16 @@ namespace Rhisis.World.Handlers
         /// <param name="database">Database access layer.</param>
         /// <param name="playerFactory">Player factory.</param>
         /// <param name="worldSpawnPacketFactory">World spawn packet factory.</param>
-        public JoinGameHandler(ILogger<JoinGameHandler> logger, IRhisisDatabase database, IMapManager mapManager, IDeathSystem deathSystem, ITeleportSystem teleportSystem, IPlayerFactory playerFactory, IWorldSpawnPacketFactory worldSpawnPacketFactory)
+        public JoinGameHandler(ILogger<JoinGameHandler> logger, IRhisisDatabase database, IMapManager mapManager, 
+            IDeathSystem deathSystem, ITeleportSystem teleportSystem, IPlayerDataSystem playerDataSystem, 
+            IPlayerFactory playerFactory, IWorldSpawnPacketFactory worldSpawnPacketFactory)
         {
             _logger = logger;
             _database = database;
             _mapManager = mapManager;
             _deathSystem = deathSystem;
             _teleportSystem = teleportSystem;
+            _playerDataSystem = playerDataSystem;
             _playerFactory = playerFactory;
             _worldSpawnPacketFactory = worldSpawnPacketFactory;
         }
@@ -75,32 +81,41 @@ namespace Rhisis.World.Handlers
                 return;
             }
 
-            client.Player = _playerFactory.CreatePlayer(character);
-            client.Player.Connection = client;
+            IPlayerEntity player = _playerFactory.CreatePlayer(character);
 
-            if (client.Player.IsDead)
+            if (player == null)
             {
-                IMapRevivalRegion revivalRegion = _deathSystem.GetNearestRevivalRegion(client.Player);
+                _logger.LogError($"Failed to create character for '{character.Name}'.");
+                return;
+            }
+
+            player.Connection = client;
+            client.Player = player;
+
+            if (player.IsDead)
+            {
+                IMapRevivalRegion revivalRegion = _deathSystem.GetNearestRevivalRegion(player);
 
                 if (revivalRegion == null)
                 {
-                    _logger.LogError($"Cannot resurect player '{client.Player}'; Revival map region not found.");
+                    _logger.LogError($"Cannot resurect player '{player}'; Revival map region not found.");
                     return;
                 }
 
-                _deathSystem.ApplyRevivalHealthPenality(client.Player);
-                _deathSystem.ApplyDeathPenality(client.Player, sendToPlayer: false);
+                _deathSystem.ApplyRevivalHealthPenality(player);
+                _deathSystem.ApplyDeathPenality(player, sendToPlayer: false);
 
                 IMapInstance map = _mapManager.GetMap(revivalRegion.MapId);
 
-                _teleportSystem.ChangePosition(client.Player, map, revivalRegion.X, null, revivalRegion.Z);
+                _teleportSystem.ChangePosition(player, map, revivalRegion.X, null, revivalRegion.Z);
             }
 
-            client.Player.Object.CurrentLayer.AddEntity(client.Player);
+            _playerDataSystem.CalculateDefense(player);
+            player.Object.CurrentLayer.AddEntity(player);
+            _worldSpawnPacketFactory.SendPlayerSpawn(player);
 
-            _worldSpawnPacketFactory.SendPlayerSpawn(client.Player);
-            client.Player.Object.Spawned = true;
-            client.Player.PlayerData.LoggedInAt = DateTime.UtcNow;
+            player.Object.Spawned = true;
+            player.PlayerData.LoggedInAt = DateTime.UtcNow;
         }
     }
 }
