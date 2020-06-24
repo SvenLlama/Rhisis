@@ -4,9 +4,20 @@ This is the changelog of the Rhisis project. All notable changes to this project
 
 ## [Unreleased]
 
-## [0.5.0](https://github.com/Eastrall/Rhisis/releases/tag/v0.5) - 2020-06-??
+## [0.5.0](https://github.com/Eastrall/Rhisis/releases/tag/v0.5) - 2020-07-??
 
 ## [Released]
+
+## [0.4.6](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.6) - 2020-06-24
+
+### Features
+
+- ![world] Add defense calculation and reduce monster damages during fights ([#440](https://github.com/Eastrall/Rhisis/pull/440))
+- ![world] Monsters return to their original position after getting far away from their original position ([#442](https://github.com/Eastrall/Rhisis/pull/442))
+
+### Fixes
+
+- ![world] Fix equip/unequip item algorithm ([#444](https://github.com/Eastrall/Rhisis/pull/444))
 
 ## [0.4.5](https://github.com/Eastrall/Rhisis/releases/tag/v0.4.5) - 2020-06-07
 
