@@ -34,6 +34,7 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_ID)]
         public void OnProjectileLaunched(IWorldClient client, SfxIdPacket packet)
         {
+            _logger.LogDebug($"{client.Player} throwing projectile : {packet.IdSfxHit}");
             var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(client.Player, packet.IdSfxHit);
 
             if (projectile != null)
@@ -67,29 +68,30 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_HIT)]
         public void OnProjectileArrived(IWorldClient client, SfxHitPacket packet)
         {
+            _logger.LogDebug($"{client.Player} projectile : {packet.Id} arrived");
             var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(client.Player, packet.Id);
 
             if (projectile != null)
             {
-                bool isProjectileValid = true;
+                bool isProjectileValid = packet.AttackerId == client.Player.Id;
 
                 if (projectile.Type == AttackFlags.AF_MAGIC && projectile is MagicProjectileInfo magicProjectile)
                 {
-                    isProjectileValid = packet.AttackerId == client.Player.Id && packet.MagicPower == magicProjectile.MagicPower;
+                    isProjectileValid = isProjectileValid && packet.MagicPower == magicProjectile.MagicPower;
                 }
                 else if (projectile.Type == AttackFlags.AF_MAGICSKILL && projectile is MagicSkillProjectileInfo magicSkillProjectile)
                 {
-                    isProjectileValid = packet.AttackerId == client.Player.Id && packet.SkillId == magicSkillProjectile.Skill.SkillId;
+                    isProjectileValid = isProjectileValid && packet.SkillId == magicSkillProjectile.Skill.SkillId;
                 }
-                else if (projectile.Type == AttackFlags.AF_RANGE)
+                else if (projectile.Type.HasFlag(AttackFlags.AF_RANGE) && projectile is RangeArrowProjectileInfo arrowProjectile)
                 {
-                    // TODO
-                    isProjectileValid = false;
+                    isProjectileValid = isProjectileValid && packet.DamagePower == arrowProjectile.Power;
                 }
 
                 if (isProjectileValid)
                 {
                     projectile.OnArrived?.Invoke();
+                    _projectileSystem.RemoveProjectile(client.Player, packet.Id);
                 }
                 else
                 {
