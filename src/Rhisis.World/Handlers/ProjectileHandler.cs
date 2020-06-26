@@ -34,7 +34,6 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_ID)]
         public void OnProjectileLaunched(IWorldClient client, SfxIdPacket packet)
         {
-            _logger.LogDebug($"{client.Player} throwing projectile : {packet.IdSfxHit}");
             var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(client.Player, packet.IdSfxHit);
 
             if (projectile != null)
@@ -68,7 +67,6 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_HIT)]
         public void OnProjectileArrived(IWorldClient client, SfxHitPacket packet)
         {
-            _logger.LogDebug($"{client.Player} projectile : {packet.Id} arrived");
             var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(client.Player, packet.Id);
 
             if (projectile != null)
@@ -85,18 +83,19 @@ namespace Rhisis.World.Handlers
                 }
                 else if (projectile.Type.HasFlag(AttackFlags.AF_RANGE) && projectile is RangeArrowProjectileInfo arrowProjectile)
                 {
-                    isProjectileValid = isProjectileValid && packet.DamagePower == arrowProjectile.Power;
+                    isProjectileValid = isProjectileValid && packet.MagicPower == arrowProjectile.Power;
                 }
 
                 if (isProjectileValid)
                 {
                     projectile.OnArrived?.Invoke();
-                    _projectileSystem.RemoveProjectile(client.Player, packet.Id);
                 }
                 else
                 {
                     _logger.LogError($"Invalid projectile information for player '{client.Player}'.");
                 }
+
+                _projectileSystem.RemoveProjectile(client.Player, packet.Id);
             }
             else
             {
