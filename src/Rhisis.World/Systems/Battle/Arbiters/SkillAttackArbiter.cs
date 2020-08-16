@@ -71,14 +71,14 @@ namespace Rhisis.World.Systems.Battle.Arbiters
                 weaponItem = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Hand;
             }
 
-            AttackResult weaponAttackPower = BattleHelper.GetWeaponAttackPower(Attacker, weaponItem);
+            Range<int> weaponAttackPower = BattleHelper.GetWeaponAttackPower(Attacker, weaponItem);
             var weaponExtraDamages = BattleHelper.GetWeaponExtraDamages(Attacker, weaponItem);
 
             attackMin += weaponItem.Data.AttackSkillMin;
             attackMax += weaponItem.Data.AttackSkillMax;
 
-            float powerMin = (weaponAttackPower.AttackMin + attackMin * 5 + referStatistic - 20) * (16 + Skill.Level) / 13;
-            float powerMax = (weaponAttackPower.AttackMax + attackMax * 5 + referStatistic - 20) * (16 + Skill.Level) / 13;
+            float powerMin = (weaponAttackPower.Minimum + attackMin * 5 + referStatistic - 20) * (16 + Skill.Level) / 13;
+            float powerMax = (weaponAttackPower.Maximum + attackMax * 5 + referStatistic - 20) * (16 + Skill.Level) / 13;
 
             // TODO: check CHR_DMG
             powerMin += weaponExtraDamages;

@@ -44,14 +44,16 @@ namespace Rhisis.World.Systems.Battle.Arbiters
                 return attackResult;
             }
 
+            var attackRange = new Range<int>();
+
             if (Attacker is IPlayerEntity player)
             {
                 Item rightWeapon = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Hand;
 
                 // TODO: GetDamagePropertyFactor()
-                var weaponAttack = BattleHelper.GetWeaponAttackDamages(rightWeapon.Data.WeaponType, player);
-                attackResult.AttackMin = rightWeapon.Data.AbilityMin * 2 + weaponAttack;
-                attackResult.AttackMax = rightWeapon.Data.AbilityMax * 2 + weaponAttack;
+                int weaponAttack = BattleHelper.GetWeaponAttackDamages(rightWeapon.Data.WeaponType, player);
+                attackRange.Minimum = rightWeapon.Data.AbilityMin * 2 + weaponAttack;
+                attackRange.Maximum = rightWeapon.Data.AbilityMax * 2 + weaponAttack;
             }
             else if (Attacker is IMonsterEntity monster)
             {
@@ -60,14 +62,14 @@ namespace Rhisis.World.Systems.Battle.Arbiters
                     return attackResult;
                 }
 
-                attackResult.AttackMin = monster.Data.AttackMin;
-                attackResult.AttackMax = monster.Data.AttackMax;
+                attackRange.Minimum = monster.Data.AttackMin;
+                attackRange.Maximum = monster.Data.AttackMax;
             }
 
             if (IsCriticalAttack(Attacker, attackResult.Flags))
             {
                 attackResult.Flags |= AttackFlags.AF_CRITICAL;
-                CalculateCriticalDamages(attackResult);
+                CalculateCriticalDamages(attackRange);
 
                 if (IsKnockback(attackResult.Flags))
                 {
@@ -75,7 +77,7 @@ namespace Rhisis.World.Systems.Battle.Arbiters
                 }
             }
 
-            attackResult.Damages = RandomHelper.Random(attackResult.AttackMin, attackResult.AttackMax);
+            attackResult.Damages = RandomHelper.Random(attackRange.Minimum, attackRange.Maximum);
 
             if (attackResult.Flags.HasFlag(AttackFlags.AF_RANGE))
             {
@@ -174,8 +176,8 @@ namespace Rhisis.World.Systems.Battle.Arbiters
         /// <summary>
         /// Calculate critical damages.
         /// </summary>
-        /// <param name="attackResult">Attack result</param>
-        public void CalculateCriticalDamages(AttackResult attackResult)
+        /// <param name="attackRange">Attack range</param>
+        public void CalculateCriticalDamages(Range<int> attackRange)
         {
             var criticalMin = 1.1f;
             var criticalMax = 1.4f;
@@ -199,8 +201,8 @@ namespace Rhisis.World.Systems.Battle.Arbiters
             if (criticalBonus < 0.1f)
                 criticalBonus = 0.1f;
 
-            attackResult.AttackMin = (int)(attackResult.AttackMin * criticalMin * criticalBonus);
-            attackResult.AttackMax = (int)(attackResult.AttackMax * criticalMax * criticalBonus);
+            attackRange.Minimum = (int)(attackRange.Minimum * criticalMin * criticalBonus);
+            attackRange.Maximum = (int)(attackRange.Maximum * criticalMax * criticalBonus);
         }
 
         /// <summary>

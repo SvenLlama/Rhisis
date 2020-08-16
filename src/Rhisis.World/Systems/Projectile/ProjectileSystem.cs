@@ -8,7 +8,7 @@ namespace Rhisis.World.Systems.Projectile
     public class ProjectileSystem : IProjectileSystem
     {
         /// <inheritdoc />
-        public int CreateProjectile(int projectileId, ProjectileInfo projectile)
+        public int CreateProjectile(int projectileId, Game.Structures.Projectile projectile)
         {
             ILivingEntity livingEntity = projectile.Owner;
 
@@ -25,7 +25,7 @@ namespace Rhisis.World.Systems.Projectile
 
         /// <inheritdoc />
         public TProjectile GetProjectile<TProjectile>(ILivingEntity livingEntity, int projectileId) 
-            where TProjectile : ProjectileInfo 
-            => livingEntity.Battle.Projectiles.TryGetValue(projectileId, out ProjectileInfo projectile) ? (TProjectile)projectile : default;
+            where TProjectile : Game.Structures.Projectile 
+            => livingEntity.Battle.Projectiles.TryGetValue(projectileId, out Game.Structures.Projectile projectile) ? (TProjectile)projectile : default;
     }
 }

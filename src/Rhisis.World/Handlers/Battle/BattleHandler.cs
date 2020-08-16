@@ -9,7 +9,7 @@ using Rhisis.World.Systems.Battle;
 using Sylver.HandlerInvoker.Attributes;
 using System;
 
-namespace Rhisis.World.Handlers
+namespace Rhisis.World.Handlers.Battle
 {
     [Handler]
     public class BattleHandler
@@ -81,6 +81,8 @@ namespace Rhisis.World.Handlers
                 _logger.LogError($"{serverClient.Player} Invalid projectile id.");
                 return;
             }
+
+            serverClient.Player.Battle.LastProjectileId = packet.ProjectileId + 1;
 
             _battleSystem.MagicAttack(serverClient.Player, target, packet.AttackMessage, Math.Max(0, packet.MagicPower), packet.ProjectileId + 1);
         }

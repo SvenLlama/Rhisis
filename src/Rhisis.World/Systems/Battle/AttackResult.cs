@@ -4,12 +4,19 @@ namespace Rhisis.World.Systems.Battle
 {
     public class AttackResult
     {
-        public int AttackMin { get; set; }
-
-        public int AttackMax { get; set; }
-
         public int Damages { get; set; }
 
         public AttackFlags Flags { get; set; }
+
+        public AttackResult()
+            : this(default, AttackFlags.AF_GENERIC)
+        {
+        }
+
+        public AttackResult(int damages, AttackFlags flags)
+        {
+            Damages = damages;
+            Flags = flags;
+        }
     }
 }

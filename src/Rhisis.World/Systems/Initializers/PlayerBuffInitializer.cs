@@ -49,7 +49,7 @@ namespace Rhisis.World.Systems.Initializers
 
                     foreach (KeyValuePair<DefineAttributes, int> buffAttribute in buffAttributes)
                     {
-                        _attributeSystem.SetAttribute(player, buffAttribute.Key, buffAttribute.Value, sendToEntity: false);
+                        _attributeSystem.IncreaseAttribute(player, buffAttribute.Key, buffAttribute.Value, sendToEntity: false);
                     }
                 }
             }

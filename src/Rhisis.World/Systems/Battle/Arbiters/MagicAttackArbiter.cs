@@ -1,4 +1,5 @@
-﻿using Rhisis.Core.Data;
+﻿using Rhisis.Core.Common;
+using Rhisis.Core.Data;
 using Rhisis.Core.Helpers;
 using Rhisis.World.Game.Common;
 using Rhisis.World.Game.Entities;
@@ -38,13 +39,13 @@ namespace Rhisis.World.Systems.Battle.Arbiters
             {
                 Item wandWeapon = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Hand;
 
-                AttackResult weaponAttackResult = BattleHelper.GetWeaponAttackPower(Attacker, wandWeapon);
+                Range<int> weaponAttackResult = BattleHelper.GetWeaponAttackPower(Attacker, wandWeapon);
                 var weaponAttackDamages = BattleHelper.GetWeaponAttackDamages(WeaponType.MAGIC_WAND, player);
 
-                weaponAttackResult.AttackMin += weaponAttackDamages;
-                weaponAttackResult.AttackMax += weaponAttackDamages;
+                weaponAttackResult.Minimum += weaponAttackDamages;
+                weaponAttackResult.Maximum += weaponAttackDamages;
 
-                attackResult.Damages = RandomHelper.Random(weaponAttackResult.AttackMin, weaponAttackResult.AttackMax);
+                attackResult.Damages = RandomHelper.Random(weaponAttackResult.Minimum, weaponAttackResult.Maximum);
                 attackResult.Damages += Math.Max(0, Attacker.Attributes[DefineAttributes.CHR_DMG]);
                 attackResult.Damages = (int)(attackResult.Damages * GetWandAttackMultiplier());
             }

@@ -97,16 +97,15 @@ namespace Rhisis.World.Systems.Battle
         /// <param name="entity">Living entity using the weapon.</param>
         /// <param name="weapon">Weapon used by the living entity.</param>
         /// <returns><see cref="AttackResult"/> with AttackMin and AttackMax range.</returns>
-        public static AttackResult GetWeaponAttackPower(ILivingEntity entity, Item weapon)
+        public static Range<int> GetWeaponAttackPower(ILivingEntity entity, Item weapon)
         {
             float multiplier = GetWeaponItemMultiplier(weapon);
             int power = weapon?.Refine > 0 ? (int)Math.Pow(weapon?.Refine ?? default, 1.5f) : default;
 
-            return new AttackResult
-            {
-                AttackMin = (int)((entity.Attributes[DefineAttributes.ABILITY_MIN] + weapon?.Data.AbilityMin) * multiplier) + power,
-                AttackMax = (int)((entity.Attributes[DefineAttributes.ABILITY_MAX] + weapon?.Data.AbilityMax) * multiplier) + power,
-            };
+            int min = (int)((entity.Attributes[DefineAttributes.ABILITY_MIN] + weapon?.Data.AbilityMin) * multiplier) + power;
+            int max = (int)((entity.Attributes[DefineAttributes.ABILITY_MAX] + weapon?.Data.AbilityMax) * multiplier) + power;
+
+            return new Range<int>(min, max);
         }
 
         /// <summary>

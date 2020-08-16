@@ -4,7 +4,7 @@ using System;
 
 namespace Rhisis.World.Game.Structures
 {
-    public abstract class ProjectileInfo
+    public abstract class Projectile
     {
         /// <summary>
         /// Gets the projectile owner.
@@ -27,12 +27,12 @@ namespace Rhisis.World.Game.Structures
         public abstract AttackFlags Type { get; }
 
         /// <summary>
-        /// Creates a new <see cref="ProjectileInfo"/> instance.
+        /// Creates a new <see cref="Projectile"/> instance.
         /// </summary>
         /// <param name="owner">Projectile owner entity.</param>
         /// <param name="target">Projectile target entity.</param>
         /// <param name="onArrived">Action to execute when the projectile arrives to its target.</param>
-        protected ProjectileInfo(ILivingEntity owner, ILivingEntity target, Action onArrived)
+        protected Projectile(ILivingEntity owner, ILivingEntity target, Action onArrived)
         {
             Owner = owner;
             Target = target;

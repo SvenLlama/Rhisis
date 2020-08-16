@@ -47,10 +47,10 @@ namespace Rhisis.World.Systems.Skills
         void Reskill(IPlayerEntity player);
 
         /// <summary>
-        /// Add skill points to the given player.
+        /// Gives skill points to the given player.
         /// </summary>
         /// <param name="player">Current player.</param>
         /// <param name="skillPoints">Skill points amount to give.</param>
-        void AddSkillPoints(IPlayerEntity player, ushort skillPoints);
+        void GiveSkillPoints(IPlayerEntity player, ushort skillPoints);
     }
 }

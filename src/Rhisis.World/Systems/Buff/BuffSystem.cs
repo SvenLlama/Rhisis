@@ -14,8 +14,6 @@ namespace Rhisis.World.Systems.Buff
     {
         private readonly IAttributeSystem _attributeSystem;
 
-        public int Order => 0;
-
         public BuffSystem(IAttributeSystem attributeSystem)
         {
             _attributeSystem = attributeSystem;
@@ -44,7 +42,7 @@ namespace Rhisis.World.Systems.Buff
 
             foreach (KeyValuePair<DefineAttributes, int> attribute in buff.Attributes)
             {
-                _attributeSystem.ResetAttribute(entity, attribute.Key, attribute.Value);
+                _attributeSystem.DecreaseAttribute(entity, attribute.Key, attribute.Value);
             }
 
             return true;

@@ -157,5 +157,35 @@ namespace Rhisis.World.Systems.Statistics
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the hit rating of an entity.
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        /// <returns></returns>
+        public int GetHitRating(ILivingEntity entity)
+        {
+            return entity switch
+            {
+                IPlayerEntity player => GetTotalDexterity(player),
+                IMonsterEntity monster => monster.Data.HitRating,
+                _ => 0
+            };
+        }
+
+        /// <summary>
+        /// Gets the escape rating of an entity.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public int GetEscapeRating(ILivingEntity entity)
+        {
+            return entity switch
+            {
+                IPlayerEntity player => (int)(GetTotalDexterity(player) * 0.5f),
+                IMonsterEntity monster => monster.Data.EscapeRating,
+                _ => 0
+            };
+        }
     }
 }

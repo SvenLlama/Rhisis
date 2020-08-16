@@ -465,7 +465,7 @@ namespace Rhisis.World.Systems.Quest
 
             if (quest.Rewards.SkillPoints > 0)
             {
-                _skillSystem.AddSkillPoints(player, quest.Rewards.SkillPoints);
+                _skillSystem.GiveSkillPoints(player, quest.Rewards.SkillPoints);
             }
 
             questToFinish.IsFinished = true;

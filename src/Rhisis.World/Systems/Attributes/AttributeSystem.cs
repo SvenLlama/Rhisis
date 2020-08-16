@@ -20,7 +20,7 @@ namespace Rhisis.World.Systems.Attributes
             _moverPacketFactory = moverPacketFactory;
         }
 
-        public void SetAttribute(ILivingEntity entity, DefineAttributes attribute, int value, bool sendToEntity = true)
+        public void IncreaseAttribute(ILivingEntity entity, DefineAttributes attribute, int value, bool sendToEntity = true)
         {
             switch (attribute)
             {
@@ -30,17 +30,17 @@ namespace Rhisis.World.Systems.Attributes
                     _healthSystem.IncreasePoints(entity, attribute, value);
                     break;
                 case DefineAttributes.RESIST_ALL:
-                    SetAttribute(entity, DefineAttributes.RESIST_FIRE, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.RESIST_ELECTRICITY, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.RESIST_WATER, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.RESIST_WIND, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.RESIST_EARTH, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.RESIST_FIRE, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.RESIST_ELECTRICITY, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.RESIST_WATER, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.RESIST_WIND, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.RESIST_EARTH, value, sendToEntity);
                     return;
                 case DefineAttributes.STAT_ALLUP:
-                    SetAttribute(entity, DefineAttributes.STR, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.STA, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.DEX, value, sendToEntity);
-                    SetAttribute(entity, DefineAttributes.INT, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.STR, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.STA, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.DEX, value, sendToEntity);
+                    IncreaseAttribute(entity, DefineAttributes.INT, value, sendToEntity);
                     return;
             }
 
@@ -67,22 +67,22 @@ namespace Rhisis.World.Systems.Attributes
             }
         }
 
-        public void ResetAttribute(ILivingEntity entity, DefineAttributes attribute, int value, bool sendToEntity = true)
+        public void DecreaseAttribute(ILivingEntity entity, DefineAttributes attribute, int value, bool sendToEntity = true)
         {
             switch (attribute)
             {
                 case DefineAttributes.RESIST_ALL:
-                    ResetAttribute(entity, DefineAttributes.RESIST_FIRE, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.RESIST_ELECTRICITY, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.RESIST_WATER, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.RESIST_WIND, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.RESIST_EARTH, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.RESIST_FIRE, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.RESIST_ELECTRICITY, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.RESIST_WATER, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.RESIST_WIND, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.RESIST_EARTH, value, sendToEntity);
                     return;
                 case DefineAttributes.STAT_ALLUP:
-                    ResetAttribute(entity, DefineAttributes.STR, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.STA, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.DEX, value, sendToEntity);
-                    ResetAttribute(entity, DefineAttributes.INT, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.STR, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.STA, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.DEX, value, sendToEntity);
+                    DecreaseAttribute(entity, DefineAttributes.INT, value, sendToEntity);
                     return;
             }
 
@@ -96,11 +96,11 @@ namespace Rhisis.World.Systems.Attributes
                 {
                     entity.Attributes[attribute] -= value;
                 }
-            }
 
-            if (sendToEntity)
-            {
-                _moverPacketFactory.SendResetAttribute(entity, attribute, value);
+                if (sendToEntity)
+                {
+                    _moverPacketFactory.SendResetAttribute(entity, attribute, value);
+                }
             }
         }
     }

@@ -34,7 +34,7 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_ID)]
         public void OnProjectileLaunched(IWorldServerClient serverClient, SfxIdPacket packet)
         {
-            var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(serverClient.Player, packet.IdSfxHit);
+            var projectile = _projectileSystem.GetProjectile<Projectile>(serverClient.Player, packet.IdSfxHit);
 
             if (projectile != null)
             {
@@ -67,21 +67,21 @@ namespace Rhisis.World.Handlers
         [HandlerAction(PacketType.SFX_HIT)]
         public void OnProjectileArrived(IWorldServerClient serverClient, SfxHitPacket packet)
         {
-            var projectile = _projectileSystem.GetProjectile<ProjectileInfo>(serverClient.Player, packet.Id);
+            var projectile = _projectileSystem.GetProjectile<Projectile>(serverClient.Player, packet.Id);
 
             if (projectile != null)
             {
                 bool isProjectileValid = packet.AttackerId == serverClient.Player.Id;
 
-                if (projectile.Type == AttackFlags.AF_MAGIC && projectile is MagicProjectileInfo magicProjectile)
+                if (projectile.Type == AttackFlags.AF_MAGIC && projectile is MagicProjectile magicProjectile)
                 {
                     isProjectileValid = isProjectileValid && packet.MagicPower == magicProjectile.MagicPower;
                 }
-                else if (projectile.Type == AttackFlags.AF_MAGICSKILL && projectile is MagicSkillProjectileInfo magicSkillProjectile)
+                else if (projectile.Type == AttackFlags.AF_MAGICSKILL && projectile is MagicSkillProjectile magicSkillProjectile)
                 {
                     isProjectileValid = isProjectileValid && packet.SkillId == magicSkillProjectile.Skill.SkillId;
                 }
-                else if (projectile.Type.HasFlag(AttackFlags.AF_RANGE) && projectile is RangeArrowProjectileInfo arrowProjectile)
+                else if (projectile.Type.HasFlag(AttackFlags.AF_RANGE) && projectile is RangeArrowProjectile arrowProjectile)
                 {
                     isProjectileValid = isProjectileValid && packet.MagicPower == arrowProjectile.Power;
                 }

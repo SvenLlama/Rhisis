@@ -4,27 +4,27 @@ using System;
 
 namespace Rhisis.World.Game.Structures
 {
-    public class MagicProjectileInfo : ProjectileInfo
+    public class RangeArrowProjectile : Projectile
     {
         /// <inheritdoc />
-        public override AttackFlags Type => AttackFlags.AF_MAGIC;
+        public override AttackFlags Type => AttackFlags.AF_GENERIC | AttackFlags.AF_RANGE;
 
         /// <summary>
-        /// Gets the projectile magic power.
+        /// Gets the range arrow power.
         /// </summary>
-        public int MagicPower { get; }
+        public int Power { get; }
 
         /// <summary>
-        /// Creates a new <see cref="MagicProjectileInfo"/> instance created by a wand attack.
+        /// Creates a new <see cref="RangeArrowProjectile"/> instance.
         /// </summary>
         /// <param name="owner">Projectile owner entity.</param>
         /// <param name="target">Projectile target entity.</param>
-        /// <param name="magicPower">Magic attack power.</param>
+        /// <param name="power">Range arrow power.</param>
         /// <param name="onArrived">Action to execute when the magic projectile arrives to its target.</param>
-        public MagicProjectileInfo(ILivingEntity owner, ILivingEntity target, int magicPower, Action onArrived) 
+        public RangeArrowProjectile(ILivingEntity owner, ILivingEntity target, int power, Action onArrived) 
             : base(owner, target, onArrived)
         {
-            MagicPower = magicPower;
+            Power = power;
         }
     }
 }

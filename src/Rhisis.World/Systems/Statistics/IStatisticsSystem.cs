@@ -103,5 +103,19 @@ namespace Rhisis.World.Systems.Statistics
         /// <param name="entity">Entity</param>
         /// <returns>Entity total intelligence.</returns>
         int GetTotalIntelligence(ILivingEntity entity);
+
+        /// <summary>
+        /// Gets the hit rating of an entity.
+        /// </summary>
+        /// <param name="entity">Entity</param>
+        /// <returns></returns>
+        int GetHitRating(ILivingEntity entity);
+
+        /// <summary>
+        /// Gets the escape rating of an entity.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        int GetEscapeRating(ILivingEntity entity);
     }
 }

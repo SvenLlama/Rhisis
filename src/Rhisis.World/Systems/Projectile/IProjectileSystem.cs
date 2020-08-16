@@ -14,7 +14,7 @@ namespace Rhisis.World.Systems.Projectile
         /// <param name="projectileId">Projectile id.</param>
         /// <param name="projectile">Projectile information.</param>
         /// <returns>Projectile id.</returns>
-        int CreateProjectile(int projectileId, ProjectileInfo projectile);
+        int CreateProjectile(int projectileId, Game.Structures.Projectile projectile);
 
         /// <summary>
         /// Removes a projectile from the given living entity projectile's collection.
@@ -30,6 +30,6 @@ namespace Rhisis.World.Systems.Projectile
         /// <param name="livingEntity">Current living entity.</param>
         /// <param name="projectileId">Projectile id.</param>
         /// <returns>Projectile.</returns>
-        TProjectile GetProjectile<TProjectile>(ILivingEntity livingEntity, int projectileId) where TProjectile : ProjectileInfo;
+        TProjectile GetProjectile<TProjectile>(ILivingEntity livingEntity, int projectileId) where TProjectile : Game.Structures.Projectile;
     }
 }
