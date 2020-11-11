@@ -3,26 +3,25 @@ using Rhisis.Core.Structures;
 using Rhisis.Game.Abstractions;
 using Rhisis.Game.Abstractions.Entities;
 using Rhisis.Game.Common;
+using Rhisis.Game.Features.AttackArbiters.Participants;
 using System;
 
 namespace Rhisis.Game.Features.AttackArbiters
 {
     public class MeleeAttackArbiter : AttackArbiterBase
     {
-        public const int MinimalHitRate = 20;
-        public const int MaximalHitRate = 96;
         private readonly AttackFlags _attackFlags;
         private readonly int _attackPower;
 
         /// <summary>
         /// Creates a new <see cref="MeleeAttackArbiter"/> instance.
         /// </summary>
-        /// <param name="attacker">Attacker entity</param>
-        /// <param name="defender">Defender entity</param>
+        /// <param name="attackerOld">Attacker entity</param>
+        /// <param name="defenderOld">Defender entity</param>
         /// <param name="attackFlags">Default attack flags.</param>
         /// <param name="attackPower">Attack power.</param>
-        public MeleeAttackArbiter(IMover attacker, IMover defender, AttackFlags attackFlags = AttackFlags.AF_GENERIC, int attackPower = 0)
-            : base(attacker, defender)
+        public MeleeAttackArbiter(IMover attackerOld, IMover defenderOld, IBattleParticipant attacker, IBattleParticipant defender, AttackFlags attackFlags = AttackFlags.AF_GENERIC, int attackPower = 0)
+            : base(attackerOld, defenderOld, attacker, defender)
         {
             _attackFlags = attackFlags;
             _attackPower = attackPower;
@@ -41,27 +40,9 @@ namespace Rhisis.Game.Features.AttackArbiters
                 return AttackResult.Miss();
             }
 
-            Range<int> attackRange = null;
+            Range<int> attackRange = Attacker.CalculateMeleeAttackRange();
 
-            if (Attacker is IPlayer player)
-            {
-                IItem weapon = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Inventory.Hand;
-                // TODO: get dual weapon for blades
-                int weaponAttack = GetWeaponAttackDamages(player, weapon.Data.WeaponType);
-
-                attackRange = new Range<int>(weapon.Data.AbilityMin * 2 + weaponAttack, weapon.Data.AbilityMax * 2 + weaponAttack);
-            }
-            else if (Attacker is IMonster monster)
-            {
-                attackRange = new Range<int>(monster.Data.AttackMin, monster.Data.AttackMax);
-            }
-
-            if (attackRange == null)
-            {
-                return AttackResult.Miss();
-            }
-
-            if (IsCriticalAttack(Attacker, flags))
+            if (IsCriticalAttack(AttackerOld, flags))
             {
                 flags |= AttackFlags.AF_CRITICAL;
                 attackRange = CalculateCriticalDamages(attackRange);
@@ -88,50 +69,24 @@ namespace Rhisis.Game.Features.AttackArbiters
         /// <returns></returns>
         private AttackFlags GetAttackFlags()
         {
-            if (Attacker is IPlayer player && player.Mode.HasFlag(ModeType.ONEKILL_MODE))
+            if (Attacker.HasOneKillMode())
             {
                 return AttackFlags.AF_GENERIC;
             }
 
-            int hitRate;
-            var hitRating = GetHitRating(Attacker);
-            var escapeRating = GetEspaceRating(Defender);
+            var hitRating = Attacker.CalculateHitRating();
+            var escapeRating = Defender.CalculateEscapeRating();
+            var hitRatingNumeratorMultiplier = Attacker.GetHitRatingNumeratorMultiplier();
+            var hitRatingDenominator = Attacker.GetHitRatingDenominatorMultiplier();
+            var hitRatingLevelNumeratorMultiplier = Attacker.GetHitRatingLevelNumeratorMultiplier();
+            var hitRatingLevelDenominatorMultiplier = Attacker.GetHitRatingLevelDenominatorMultiplier();
 
-            if (Attacker is IMonster && Defender is IPlayer)
-            {
-                // Monster VS Player
-                hitRate = (int)(hitRating * 1.5f / (hitRating + escapeRating) * 2.0f *
-                          (Attacker.Level * 0.5f / (Attacker.Level + Defender.Level * 0.3f)) * 100.0f);
-            }
-            else
-            {
-                // Player VS Player or Player VS Monster
-                hitRate = (int)(hitRating * 1.6f / (hitRating + escapeRating) * 1.5f *
-                          (Attacker.Level * 1.2f / (Attacker.Level + Defender.Level)) * 100.0f);
-            }
+            int hitRate = (int)(hitRating * hitRatingNumeratorMultiplier / (hitRating + escapeRating) * hitRatingDenominator *
+                      (AttackerOld.Level * hitRatingLevelNumeratorMultiplier / (AttackerOld.Level + DefenderOld.Level * hitRatingLevelDenominatorMultiplier)) * 100.0f);
 
-            hitRate = Math.Clamp(hitRate, MinimalHitRate, MaximalHitRate);
+            hitRate = Math.Clamp(hitRate, Attacker.GetMinHitRating(), Attacker.GetMaxHitRating());
 
             return RandomHelper.Random(0, 100) < hitRate ? _attackFlags : AttackFlags.AF_MISS;
-        }
-
-        /// <summary>
-        /// Gets the hit rating of an entity.
-        /// </summary>
-        /// <param name="entity">Entity</param>
-        /// <returns></returns>
-        private int GetHitRating(IMover entity)
-        {
-            if (entity is IPlayer player)
-            {
-                return player.Statistics.Dexterity + player.Attributes.Get(DefineAttributes.DEX);
-            }
-            else if (entity is IMonster monster)
-            {
-                return monster.Data.HitRating;
-            }
-
-            return 0;
         }
 
         /// <summary>
@@ -140,7 +95,7 @@ namespace Rhisis.Game.Features.AttackArbiters
         /// <param name="attacker">Attacker</param>
         /// <param name="currentAttackFlags">Attack flags</param>
         /// <returns></returns>
-        public bool IsCriticalAttack(IMover attacker, AttackFlags currentAttackFlags)
+        private bool IsCriticalAttack(IMover attacker, AttackFlags currentAttackFlags)
         {
             if (currentAttackFlags.HasFlag(AttackFlags.AF_MELEESKILL) || currentAttackFlags.HasFlag(AttackFlags.AF_MAGICSKILL))
                 return false;
@@ -169,14 +124,14 @@ namespace Rhisis.Game.Features.AttackArbiters
         /// Calculate critical damages.
         /// </summary>
         /// <param name="actualAttackRange">Attack result</param>
-        public Range<int> CalculateCriticalDamages(Range<int> actualAttackRange)
+        private Range<int> CalculateCriticalDamages(Range<int> actualAttackRange)
         {
             var criticalMin = 1.1f;
             var criticalMax = 1.4f;
 
-            if (Attacker.Level > Defender.Level)
+            if (AttackerOld.Level > DefenderOld.Level)
             {
-                if (Defender is IMonster)
+                if (DefenderOld is IMonster)
                 {
                     criticalMin = 1.2f;
                     criticalMax = 2.0f;
@@ -206,16 +161,16 @@ namespace Rhisis.Game.Features.AttackArbiters
         /// </summary>
         /// <param name="attackerAttackFlags">Attacker attack flags</param>
         /// <returns></returns>
-        public bool IsKnockback(AttackFlags attackerAttackFlags)
+        private bool IsKnockback(AttackFlags attackerAttackFlags)
         {
             var knockbackChance = RandomHelper.Random(0, 100) < 15;
 
-            if (Defender is IPlayer)
+            if (DefenderOld is IPlayer)
             {
                 return false;
             }
 
-            if (Attacker is IPlayer player)
+            if (AttackerOld is IPlayer player)
             {
                 IItem weapon = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Inventory.Hand;
 
@@ -228,7 +183,7 @@ namespace Rhisis.Game.Features.AttackArbiters
             var canFly = false;
 
             // TODO: if is flying, return false
-            if (Defender.ObjectState.HasFlag(ObjectState.OBJSTA_DMG_FLY_ALL) && Defender is IMonster monster)
+            if (DefenderOld.ObjectState.HasFlag(ObjectState.OBJSTA_DMG_FLY_ALL) && DefenderOld is IMonster monster)
             {
                 canFly = monster.Data.Class != MoverClassType.RANK_SUPER &&
                     monster.Data.Class != MoverClassType.RANK_MATERIAL &&

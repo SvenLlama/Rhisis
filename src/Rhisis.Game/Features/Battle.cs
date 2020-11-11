@@ -4,6 +4,7 @@ using Rhisis.Game.Abstractions.Entities;
 using Rhisis.Game.Abstractions.Features;
 using Rhisis.Game.Common;
 using Rhisis.Game.Features.AttackArbiters;
+using Rhisis.Game.Features.AttackArbiters.Participants;
 using Rhisis.Game.Features.AttackArbiters.Reducers;
 using Rhisis.Game.Protocol.Snapshots.Battle;
 using System;
@@ -14,6 +15,7 @@ namespace Rhisis.Game.Features
     {
         private readonly IMover _mover;
         private readonly ILogger<Battle> _logger;
+        private readonly BattleParticipantFactory _participantFactory;
 
         public bool IsFighting => Target != null;
 
@@ -23,6 +25,7 @@ namespace Rhisis.Game.Features
         {
             _mover = mover;
             _logger = logger;
+            _participantFactory = new BattleParticipantFactory();
         }
 
         public bool CanAttack(IMover target)
@@ -55,7 +58,13 @@ namespace Rhisis.Game.Features
 
         public void MeleeAttack(IMover target, ObjectMessageType objectMessageType)
         {
-            AttackResult attackResult = new MeleeAttackArbiter(_mover, target).CalculateDamages();
+            var arbiter = new MeleeAttackArbiter(
+                _mover,
+                target,
+                _participantFactory.Create(_mover),
+                _participantFactory.Create(target));
+
+            AttackResult attackResult = arbiter.CalculateDamages();
 
             if (!attackResult.Flags.HasFlag(AttackFlags.AF_MISS))
             {
@@ -77,7 +86,7 @@ namespace Rhisis.Game.Features
             {
                 projectile = new ArrowProjectile(_mover, target, power, () =>
                 {
-                    AttackResult attackResult = new MeleeAttackArbiter(_mover, target, AttackFlags.AF_GENERIC | AttackFlags.AF_RANGE, power).CalculateDamages();
+                    AttackResult attackResult = new MeleeAttackArbiter(_mover, target, null,null, AttackFlags.AF_GENERIC | AttackFlags.AF_RANGE, power).CalculateDamages();
 
                     if (!attackResult.Flags.HasFlag(AttackFlags.AF_MISS))
                     {
@@ -91,7 +100,14 @@ namespace Rhisis.Game.Features
             {
                 projectile = new MagicProjectile(_mover, target, power, () =>
                 {
-                    AttackResult attackResult = new MagicAttackArbiter(_mover, target, power).CalculateDamages();
+                    var arbiter = new MagicAttackArbiter(
+                        _mover, 
+                        target,
+                        _participantFactory.Create(_mover),
+                        _participantFactory.Create(target),
+                        power);
+
+                    AttackResult attackResult = arbiter.CalculateDamages();
 
                     if (!attackResult.Flags.HasFlag(AttackFlags.AF_MISS))
                     {

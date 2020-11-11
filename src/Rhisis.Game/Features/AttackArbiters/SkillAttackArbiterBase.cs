@@ -12,7 +12,7 @@ namespace Rhisis.Game.Features.AttackArbiters
         protected ISkill Skill { get; }
      
         protected SkillAttackArbiterBase(IMover attacker, IMover defender, ISkill skill)
-            : base(attacker, defender)
+            : base(attacker, defender, null, null)
         {
             Skill = skill;
         }
@@ -23,8 +23,8 @@ namespace Rhisis.Game.Features.AttackArbiters
         /// <returns>Skill power.</returns>
         protected int GetAttackerSkillPower()
         {
-            int referStatistic1 = Attacker.Attributes.Get(Skill.Data.ReferStat1);
-            int referStatistic2 = Attacker.Attributes.Get(Skill.Data.ReferStat2);
+            int referStatistic1 = AttackerOld.Attributes.Get(Skill.Data.ReferStat1);
+            int referStatistic2 = AttackerOld.Attributes.Get(Skill.Data.ReferStat2);
 
             if (Skill.Data.ReferTarget1 == SkillReferTargetType.Attack && referStatistic1 != 0)
             {
@@ -37,19 +37,19 @@ namespace Rhisis.Game.Features.AttackArbiters
             }
 
             var referStatistic = referStatistic1 + referStatistic2;
-            Range<int> attack = Attacker is IPlayer && Defender is IPlayer
+            Range<int> attack = AttackerOld is IPlayer && DefenderOld is IPlayer
                 ? new Range<int>(Skill.LevelData.AbilityMinPVP, Skill.LevelData.AbilityMaxPVP)
                 : new Range<int>(Skill.LevelData.AbilityMin, Skill.LevelData.AbilityMax);
 
             IItem weaponItem = null;
 
-            if (Attacker is IPlayer player)
+            if (AttackerOld is IPlayer player)
             {
                 weaponItem = player.Inventory.GetEquipedItem(ItemPartType.RightWeapon) ?? player.Inventory.Hand;
             }
 
-            Range<int> weaponAttackPower = GetWeaponAttackPower(Attacker, weaponItem);
-            var weaponExtraDamages = GetWeaponExtraDamages(Attacker, weaponItem);
+            Range<int> weaponAttackPower = new Range<int>(1, 10);// TODO fix this GetWeaponAttackPower(AttackerOld, weaponItem);
+            var weaponExtraDamages = GetWeaponExtraDamages(AttackerOld, weaponItem);
 
             attack = new Range<int>(attack.Minimum + weaponItem.Data.AttackSkillMin, attack.Maximum + weaponItem.Data.AttackSkillMax);
 

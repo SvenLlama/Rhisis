@@ -13,7 +13,7 @@ namespace Rhisis.Game.Features.AttackArbiters
 
         public override AttackResult CalculateDamages()
         {
-            var damages = (int)(GetAttackerSkillPower() * GetAttackMultiplier()) + Attacker.Attributes.Get(DefineAttributes.ATKPOWER);
+            var damages = (int)(GetAttackerSkillPower() * GetAttackMultiplier()) + AttackerOld.Attributes.Get(DefineAttributes.ATKPOWER);
 
             return AttackResult.Success(damages, AttackFlags.AF_MELEESKILL);
         }

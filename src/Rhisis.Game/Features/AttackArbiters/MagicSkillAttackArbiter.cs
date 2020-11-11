@@ -27,13 +27,13 @@ namespace Rhisis.Game.Features.AttackArbiters
 
             if (skillMastryAttribute.HasValue)
             {
-                var ratio = Math.Max(0, Attacker.Attributes.Get(skillMastryAttribute.Value) / 100f);
+                var ratio = Math.Max(0, AttackerOld.Attributes.Get(skillMastryAttribute.Value) / 100f);
 
                 damages = (int)(damages + damages * ratio);
             }
 
             damages *= (int)GetAttackMultiplier();
-            damages += Attacker.Attributes.Get(DefineAttributes.ATKPOWER);
+            damages += AttackerOld.Attributes.Get(DefineAttributes.ATKPOWER);
 
             return AttackResult.Success(damages, AttackFlags.AF_MAGICSKILL);
         }

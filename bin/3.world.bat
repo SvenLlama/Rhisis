@@ -1,1 +1,1 @@
-dotnet run --project ../src/Rhisis.World/Rhisis.World.csproj --configuration Release
+dotnet run --project ../src/Rhisis.World/Rhisis.World.csproj --configuration Development
