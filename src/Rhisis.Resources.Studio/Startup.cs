@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rhisis.Game.Abstractions.Resources;
+using Rhisis.Game.Resources;
+using Rhisis.Resources.Studio.HostedServices;
 
 namespace Rhisis.Resources.Studio
 {
@@ -20,6 +23,9 @@ namespace Rhisis.Resources.Studio
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMemoryCache();
+            services.AddSingleton<IGameResources, GameResources>();
+            services.AddHostedService<LoadResourcesHostedService>();
 
             services.AddControllersWithViews();
 

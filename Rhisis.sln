@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhisis.Game", "src\Rhisis.G
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhisis.Game.Common", "src\Rhisis.Game.Common\Rhisis.Game.Common.csproj", "{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhisis.Resources.Studio", "Rhisis.Resources.Studio\Rhisis.Resources.Studio.csproj", "{0D30EDD8-3683-49D5-8869-0828F87DA61E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhisis.Resources.Studio", "src\Rhisis.Resources.Studio\Rhisis.Resources.Studio.csproj", "{0D30EDD8-3683-49D5-8869-0828F87DA61E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

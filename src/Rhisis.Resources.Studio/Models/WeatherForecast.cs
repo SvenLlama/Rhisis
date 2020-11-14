@@ -1,6 +1,6 @@
 using System;
 
-namespace Rhisis.Resources.Studio
+namespace Rhisis.Resources.Studio.Models
 {
     public class WeatherForecast
     {
