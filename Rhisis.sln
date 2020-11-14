@@ -54,6 +54,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhisis.Game", "src\Rhisis.G
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhisis.Game.Common", "src\Rhisis.Game.Common\Rhisis.Game.Common.csproj", "{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhisis.Resources.Studio", "Rhisis.Resources.Studio\Rhisis.Resources.Studio.csproj", "{0D30EDD8-3683-49D5-8869-0828F87DA61E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +126,10 @@ Global
 		{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D30EDD8-3683-49D5-8869-0828F87DA61E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D30EDD8-3683-49D5-8869-0828F87DA61E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D30EDD8-3683-49D5-8869-0828F87DA61E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D30EDD8-3683-49D5-8869-0828F87DA61E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -147,6 +153,7 @@ Global
 		{EE9DC9E7-A1D1-42BB-B8F1-CA12E982ECCB} = {CC42CC8A-A3BC-4913-90A0-1AF2213A870F}
 		{E789E90D-60AA-4816-A58D-4135E68BBD70} = {CC42CC8A-A3BC-4913-90A0-1AF2213A870F}
 		{82B3B54C-B52F-4A46-B0DE-6F9323BC39ED} = {CC42CC8A-A3BC-4913-90A0-1AF2213A870F}
+		{0D30EDD8-3683-49D5-8869-0828F87DA61E} = {71FDF288-69F8-4ACD-9725-2430D8E6728F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B573C179-78E3-4F7B-8CFB-289754036BBA}
